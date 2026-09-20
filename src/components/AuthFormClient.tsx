@@ -4,7 +4,10 @@ import { z } from "zod";
 
 // Skema validasi Zod sesuai Bab 5 (Strict Runtime Validation)
 const loginSchema = z.object({
-  email: z.string().min(1, { message: "Email wajib diisi" }).email({ message: "Format email tidak valid" }),
+  email: z
+    .string()
+    .min(1, { message: "Email wajib diisi" })
+    .email({ message: "Format email tidak valid" }),
   password: z.string().min(8, { message: "Kata sandi minimal 8 karakter" }),
 });
 
@@ -13,7 +16,9 @@ export default function AuthFormClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +27,7 @@ export default function AuthFormClient() {
 
     // Eksekusi validasi runtime Zod
     const validation = loginSchema.safeParse({ email, password });
-    
+
     if (!validation.success) {
       const formattedErrors = validation.error.format();
       setErrors({
@@ -62,13 +67,16 @@ export default function AuthFormClient() {
           Masuk ke Dashboard
         </h2>
         {/* Penambahan aria-label untuk web semantik (Bab 1) */}
-        <form 
-          onSubmit={handleLogin} 
+        <form
+          onSubmit={handleLogin}
           className="space-y-4"
           aria-label="Formulir Autentikasi Pengguna"
         >
           <div>
-            <label htmlFor="emailInput" className="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              htmlFor="emailInput"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
               Email
             </label>
             <input
@@ -76,20 +84,27 @@ export default function AuthFormClient() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.email ? 'border-red-500' : 'border-slate-300'}`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.email ? "border-red-500" : "border-slate-300"}`}
               placeholder="masukkan email anda"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "emailError" : undefined}
             />
             {/* Penambahan role="alert" untuk Screen Reader */}
             {errors.email && (
-              <p id="emailError" className="text-red-600 text-xs mt-1 font-medium" role="alert">
+              <p
+                id="emailError"
+                className="text-red-600 text-xs mt-1 font-medium"
+                role="alert"
+              >
                 {errors.email}
               </p>
             )}
           </div>
           <div>
-            <label htmlFor="passwordInput" className="block text-sm font-medium text-slate-700 mb-1">
+            <label
+              htmlFor="passwordInput"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
               Kata Sandi
             </label>
             <input
@@ -97,13 +112,17 @@ export default function AuthFormClient() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.password ? 'border-red-500' : 'border-slate-300'}`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.password ? "border-red-500" : "border-slate-300"}`}
               placeholder="••••••••"
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? "passwordError" : undefined}
             />
             {errors.password && (
-              <p id="passwordError" className="text-red-600 text-xs mt-1 font-medium" role="alert">
+              <p
+                id="passwordError"
+                className="text-red-600 text-xs mt-1 font-medium"
+                role="alert"
+              >
                 {errors.password}
               </p>
             )}
