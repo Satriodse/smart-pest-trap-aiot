@@ -23,7 +23,7 @@ export default function DashboardPage() {
     if (!speciesInput) return;
     addMutation.mutate({
       species: speciesInput,
-      count: Math.floor(Math.random() * 50) + 10,
+      count: (window.crypto.getRandomValues(new Uint32Array(1))[0] % 50) + 10,
       location: selectedSector === "All" ? "Sektor A" : selectedSector,
     });
     setSpeciesInput("");
