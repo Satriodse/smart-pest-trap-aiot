@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deskripsi Arsitektur Proyek Akhir
+Proyek ini mengimplementasikan standar industri Front-End Engineering dengan menggunakan:
+1. Vite sebagai module bundler utama untuk memastikan kompilasi instan.
+2. Tailwind CSS v4 Oxide Engine untuk styling zero-runtime yang efisien.
+3. Zustand untuk manajemen state antarmuka (Client UI State).
+4. TanStack Query v5 untuk manajemen status peladen (Server Remote State).
+5. Zod untuk validasi skema runtime pada sisi peramban.
+6. Biome berbasis Rust untuk linting dan formatting super cepat.
+7. HTML5 Semantik dan WAI-ARIA untuk memastikan aksesibilitas penuh.
+
+Kualitas kode dijamin melalui pemindaian otomatis menggunakan SonarQube Cloud terintegrasi dengan GitHub Actions, memastikan nihil kerentanan keamanan dan nihil hotspot keamanan. Deployment produksi dialihkan langsung ke Vercel Edge Network untuk distribusi global yang optimal dan pemenuhan Google Core Web Vitals (LCP <= 2.5s).
