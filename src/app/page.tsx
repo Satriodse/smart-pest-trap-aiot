@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React from 'react';
 
 export default function LandingPage() {
@@ -24,7 +25,7 @@ export default function LandingPage() {
 
           {/* Menu */}
           <div className="hidden md:flex items-center gap-8 font-medium text-sm">
-            <a href="#" className="text-green-600 border-b-2 border-green-600 pb-1">Beranda</a>
+            <Link to="#" className="text-green-600 border-b-2 border-green-600 pb-1">Beranda</Link>
             {/* Tombol Tentang Sistem diubah menggunakan onClick handler */}
             <a 
               href="#alur-sistem" 
@@ -36,10 +37,10 @@ export default function LandingPage() {
           </div>
 
           {/* Button Login/Register */}
-          <a href="src\app\login\page.tsx" className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+          <Link to="/login" className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-md hover:shadow-lg">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             Masuk / Daftar
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -68,10 +69,10 @@ export default function LandingPage() {
             <p className="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed">
               Smart Pest Trap AIoT adalah sistem pemantauan dan prediksi hama berbasis ESP32-CAM, Computer Vision, dan Machine Learning untuk membantu petani menjaga hasil panen tetap optimal.
             </p>
-            <a href="/login" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3.5 rounded-full text-base font-semibold transition-all shadow-lg hover:shadow-green-600/30">
+            <Link to="/login" className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-3.5 rounded-full text-base font-semibold transition-all shadow-lg hover:shadow-green-600/30">
               Mulai Monitoring
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-            </a>
+            </Link>
           </div>
 
           {/* Elemen Melayang Kanan (Simulasi UI) */}
@@ -257,10 +258,10 @@ export default function LandingPage() {
                <p className="text-gray-500 text-sm">Bergabung sekarang dan rasakan manfaat teknologi Smart Pest Trap AIoT.</p>
              </div>
           </div>
-          <a href="src\app\login\page.tsx" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-sm font-semibold transition-all shadow-md whitespace-nowrap flex items-center gap-2">
+          <Link to="\login" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full text-sm font-semibold transition-all shadow-md whitespace-nowrap flex items-center gap-2">
             Mulai Monitoring
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-          </a>
+          </Link>
         </div>
       </footer>
 

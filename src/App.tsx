@@ -21,10 +21,17 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          {/* ========================================== */}
+          {/* RUTE PUBLIK (Berdiri sendiri, tanpa layout) */}
+          {/* ========================================== */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* ========================================== */}
+          {/* RUTE PRIVAT / DASHBOARD (Dibungkus AppLayout) */}
+          {/* ========================================== */}
           <Route element={<AppLayout />}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Route>
