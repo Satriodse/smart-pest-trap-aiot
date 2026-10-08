@@ -39,17 +39,36 @@ export default function AuthFormClient() {
       return;
     }
 
-    // Cek apakah login sebagai admin atau user biasa
-    const isAdmin = email.toLowerCase().includes("admin");
+    // ==========================================
+    // SIMULASI CEK DATABASE (Tanpa XAMPP/Backend)
+    // ==========================================
+    const savedUserStr = localStorage.getItem("mock_db_user");
+    
+    // Mengecek apakah ada data yang pernah didaftarkan
+    if (savedUserStr) {
+      const savedUser = JSON.parse(savedUserStr);
+      
+      // Jika email dan password COCOK dengan data registrasi
+      if (savedUser.email === email && savedUser.password === password) {
+        
+        // Cek apakah login sebagai admin atau user biasa
+        const isAdmin = email.toLowerCase().includes("admin");
 
-    document.cookie = `uns_session=${isAdmin ? "admin-token" : "user-token"}; path=/`;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+        document.cookie = `uns_session=${isAdmin ? "admin-token" : "user-token"}; path=/`;
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-    if (isAdmin) {
-      navigate("/admin");
-    } else {
-      navigate("/dashboard");
+        if (isAdmin) {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
+        return; // Hentikan eksekusi setelah berhasil login
+      }
     }
+
+    // Jika kode sampai di sini, berarti email/sandi salah atau belum terdaftar
+    setErrors({ password: "Email atau kata sandi salah, atau belum terdaftar." });
+    setIsLoading(false);
   };
 
   return (
@@ -86,6 +105,7 @@ export default function AuthFormClient() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              // DITAMBAHKAN: text-gray-900 font-medium
               className={`w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}
@@ -118,6 +138,7 @@ export default function AuthFormClient() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              // DITAMBAHKAN: text-gray-900 font-medium
               className={`w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}

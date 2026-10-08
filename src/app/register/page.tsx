@@ -25,6 +25,17 @@ export default function RegisterPage() {
       setError("Konfirmasi kata sandi tidak cocok!");
       return;
     }
+
+    // 1. Siapkan data user baru
+    const newUser = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    // 2. Simpan ke "Database" tiruan browser (LocalStorage)
+    localStorage.setItem("mock_db_user", JSON.stringify(newUser));
+
     setError(null);
     alert("Registrasi Berhasil! Silakan masuk.");
     navigate("/login");
