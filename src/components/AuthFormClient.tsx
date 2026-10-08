@@ -15,9 +15,10 @@ export default function AuthFormClient() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State baru untuk mata password
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {},
+    {}
   );
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -52,100 +53,143 @@ export default function AuthFormClient() {
   };
 
   return (
-    <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-slate-200">
-      <div className="md:w-1/2 bg-[url('/Padi.jpg')] bg-cover bg-center hidden md:block relative">
-        <div className="absolute inset-0 bg-green-900/40"></div>
-        <div className="absolute bottom-8 left-8 text-white">
-          <h2 className="text-3xl font-bold mb-2">Smart Pest Trap</h2>
-          <p className="text-green-50 text-sm pr-4">
-            Pantau lahan pertanian Anda secara presisi dengan teknologi AIoT.
-          </p>
-        </div>
-      </div>
-      <div className="md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">
-          Masuk ke Dashboard
-        </h2>
-        {/* Penambahan aria-label untuk web semantik (Bab 1) */}
-        <form
-          onSubmit={handleLogin}
-          className="space-y-4"
-          aria-label="Formulir Autentikasi Pengguna"
-        >
-          <div>
-            <label
-              htmlFor="emailInput"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Email
-            </label>
+    <div className="w-full">
+      {/* ================= HEADER FORM ================= */}
+      <h2 className="text-[26px] font-bold text-slate-900 mb-3 tracking-tight">
+        Masuk ke Smart Pest Trap
+      </h2>
+      <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+        Pantau lahan pertanian Anda secara presisi dengan teknologi AIoT.
+      </p>
+
+      {/* ================= FORMULAR LOGIN ================= */}
+      <form
+        onSubmit={handleLogin}
+        className="space-y-6"
+        aria-label="Formulir Autentikasi Pengguna"
+      >
+        
+        {/* INPUT EMAIL */}
+        <div>
+          <label
+            htmlFor="emailInput"
+            className="block text-sm font-semibold text-gray-800 mb-2"
+          >
+            Email
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </div>
             <input
               id="emailInput"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.email ? "border-red-500" : "border-slate-300"}`}
-              placeholder="masukkan email anda"
+              className={`w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border rounded-xl text-sm outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
+                errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
+              }`}
+              placeholder="Masukkan email Anda"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "emailError" : undefined}
             />
-            {/* Penambahan role="alert" untuk Screen Reader */}
-            {errors.email && (
-              <p
-                id="emailError"
-                className="text-red-600 text-xs mt-1 font-medium"
-                role="alert"
-              >
-                {errors.email}
-              </p>
-            )}
           </div>
-          <div>
-            <label
-              htmlFor="passwordInput"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Kata Sandi
-            </label>
+          {/* Penambahan role="alert" untuk Screen Reader */}
+          {errors.email && (
+            <p id="emailError" className="text-red-600 text-xs mt-1.5 font-medium" role="alert">
+              {errors.email}
+            </p>
+          )}
+        </div>
+
+        {/* INPUT PASSWORD */}
+        <div>
+          <label
+            htmlFor="passwordInput"
+            className="block text-sm font-semibold text-gray-800 mb-2"
+          >
+            Kata Sandi
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
             <input
               id="passwordInput"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full px-4 py-2.5 border rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-green-500 ${errors.password ? "border-red-500" : "border-slate-300"}`}
-              placeholder="••••••••"
+              className={`w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border rounded-xl text-sm outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
+                errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
+              }`}
+              placeholder="Masukkan kata sandi"
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? "passwordError" : undefined}
             />
-            {errors.password && (
-              <p
-                id="passwordError"
-                className="text-red-600 text-xs mt-1 font-medium"
-                role="alert"
-              >
-                {errors.password}
-              </p>
-            )}
+            {/* Tombol Show/Hide Password */}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showPassword ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+              )}
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            aria-busy={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-70 mt-2"
-          >
-            {isLoading ? "Memproses..." : "Masuk"}
-          </button>
-        </form>
-        <p className="text-center text-sm text-slate-600 mt-6">
+          {errors.password && (
+            <p id="passwordError" className="text-red-600 text-xs mt-1.5 font-medium" role="alert">
+              {errors.password}
+            </p>
+          )}
+        </div>
+
+        {/* CHECKBOX & FORGOT PASSWORD */}
+        <div className="flex items-center justify-between pt-1">
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input
+              type="checkbox"
+              className="w-4 h-4 rounded border-gray-300 text-[#148348] focus:ring-[#148348] cursor-pointer"
+            />
+            <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+              Ingat saya
+            </span>
+          </label>
+          <a href="#" className="text-sm font-bold text-[#148348] hover:text-green-800 transition-colors">
+            Lupa kata sandi?
+          </a>
+        </div>
+
+        {/* TOMBOL SUBMIT */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          aria-busy={isLoading}
+          className="w-full bg-[#148348] hover:bg-green-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2 mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isLoading ? "Memproses..." : "Masuk"}
+          {!isLoading && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          )}
+        </button>
+
+        {/* DIVIDER "atau" */}
+        <div className="relative flex py-4 items-center">
+          <div className="flex-grow border-t border-gray-200"></div>
+          <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">atau</span>
+          <div className="flex-grow border-t border-gray-200"></div>
+        </div>
+
+        {/* LINK DAFTAR */}
+        <p className="text-center text-sm text-gray-600">
           Belum punya akun?{" "}
-          <Link
-            to="/register"
-            className="text-green-600 font-bold hover:underline"
-          >
-            Daftar Sekarang
+          <Link to="/register" className="text-[#148348] font-bold hover:underline">
+            Daftar sekarang
           </Link>
         </p>
-      </div>
+      </form>
     </div>
   );
 }
