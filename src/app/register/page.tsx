@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 export default function RegisterPage() {
   const navigate = useNavigate();
   
-  // State dari kode asli Anda
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,23 +12,19 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  // State tambahan untuk fitur UI mata password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Mengatur judul halaman (Dari kode asli Anda)
   useEffect(() => {
     document.title = "Daftar Akun - Smart Pest Trap";
   }, []);
 
-  // Fungsi Register (Dari kode asli Anda)
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       setError("Konfirmasi kata sandi tidak cocok!");
       return;
     }
-    // Hapus error jika sukses
     setError(null);
     alert("Registrasi Berhasil! Silakan masuk.");
     navigate("/login");
@@ -60,7 +55,7 @@ export default function RegisterPage() {
       {/* ================= KONTEN UTAMA ================= */}
       <main className="relative z-10 flex-grow flex flex-col lg:flex-row items-center justify-between px-8 md:px-16 lg:px-24 w-full max-w-[1400px] mx-auto pb-12 pt-8 gap-12 lg:gap-0">
         
-        {/* === BAGIAN KIRI: Teks & Ikon Fitur === */}
+        {/* === BAGIAN KIRI === */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center mt-4 lg:mt-[-50px]">
           <p className="text-slate-700 font-medium mb-2 text-lg drop-shadow-sm">Selamat datang</p>
           <h1 className="text-5xl lg:text-6xl font-extrabold text-[#111827] leading-[1.1] mb-5 tracking-tight drop-shadow-sm">
@@ -77,14 +72,12 @@ export default function RegisterPage() {
               </div>
               <span className="text-sm font-semibold tracking-wide text-slate-800 lg:text-white">Deteksi<br/>Hama</span>
             </div>
-
             <div className="flex flex-col items-center text-center text-white drop-shadow-md">
               <div className="w-14 h-14 rounded-full border-[1.5px] border-white/80 flex items-center justify-center mb-3 bg-white/10 backdrop-blur-sm">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
               </div>
               <span className="text-sm font-semibold tracking-wide text-slate-800 lg:text-white">Prediksi<br/>Populasi</span>
             </div>
-
             <div className="flex flex-col items-center text-center text-white drop-shadow-md">
               <div className="w-14 h-14 rounded-full border-[1.5px] border-white/80 flex items-center justify-center mb-3 bg-white/10 backdrop-blur-sm">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -101,7 +94,6 @@ export default function RegisterPage() {
             Lengkapi informasi berikut untuk membuat akun baru di Smart Pest Trap.
           </p>
 
-          {/* Menampilkan pesan error jika password tidak cocok */}
           {error && (
             <div className="p-3 mb-6 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-100 flex items-center gap-2">
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path></svg>
@@ -122,7 +114,7 @@ export default function RegisterPage() {
                   type="text" 
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
                   placeholder="Masukkan nama lengkap Anda" 
                   required
                 />
@@ -140,7 +132,7 @@ export default function RegisterPage() {
                   type="email" 
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
                   placeholder="Masukkan email Anda" 
                   required
                 />
@@ -158,7 +150,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"} 
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
+                  className="w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
                   placeholder="Minimal 8 karakter" 
                   required
                 />
@@ -187,7 +179,7 @@ export default function RegisterPage() {
                   type={showConfirmPassword ? "text" : "password"} 
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
+                  className="w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border border-gray-200 rounded-xl text-sm text-gray-900 font-medium focus:ring-2 focus:ring-[#148348] focus:border-[#148348] outline-none transition-all placeholder-gray-400" 
                   placeholder="Ulangi kata sandi Anda" 
                   required
                 />

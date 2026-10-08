@@ -15,7 +15,7 @@ export default function AuthFormClient() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State baru untuk mata password
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
@@ -86,7 +86,7 @@ export default function AuthFormClient() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border rounded-xl text-sm outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
+              className={`w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}
               placeholder="Masukkan email Anda"
@@ -94,7 +94,6 @@ export default function AuthFormClient() {
               aria-describedby={errors.email ? "emailError" : undefined}
             />
           </div>
-          {/* Penambahan role="alert" untuk Screen Reader */}
           {errors.email && (
             <p id="emailError" className="text-red-600 text-xs mt-1.5 font-medium" role="alert">
               {errors.email}
@@ -119,7 +118,7 @@ export default function AuthFormClient() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border rounded-xl text-sm outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
+              className={`w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}
               placeholder="Masukkan kata sandi"
