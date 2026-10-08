@@ -5,6 +5,7 @@ import AdminPage from "./app/admin/page";
 import DashboardPage from "./app/dashboard/page";
 import LogHamaPage from './app/log/page';
 import NotifikasiPage from './app/notifikasi/page';
+import PengaturanPage from './app/pengaturan/page';
 import LoginPage from "./app/login/page";
 // Import halaman dari struktur folder lama Anda
 import LandingPage from "./app/page";
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/log" element={<LogHamaPage />} />
             <Route path="/notifikasi" element={<NotifikasiPage />} />
+            <Route path="/pengaturan" element={<PengaturanPage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Routes>
