@@ -16,7 +16,7 @@ export default function LoginPage() {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{ backgroundImage: "url('/Sawah.jpg')" }}
       ></div>
-      <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/10 to-transparent z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-white/10 to-transparent z-0 backdrop-blur-sm"></div>
 
       {/* ================= NAVBAR MINIMALIS ================= */}
       <nav className="relative z-10 w-full px-8 py-6 flex justify-between items-center">
