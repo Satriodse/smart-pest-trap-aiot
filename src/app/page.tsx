@@ -1,6 +1,15 @@
 import React from 'react';
 
 export default function LandingPage() {
+  // Fungsi untuk menggulir halaman ke bagian Alur Sistem secara halus
+  const scrollToAlurSistem = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    e.preventDefault();
+    const element = document.getElementById('alur-sistem');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
       
@@ -16,7 +25,14 @@ export default function LandingPage() {
           {/* Menu */}
           <div className="hidden md:flex items-center gap-8 font-medium text-sm">
             <a href="#" className="text-green-600 border-b-2 border-green-600 pb-1">Beranda</a>
-            <a href="#" className="text-gray-500 hover:text-green-600 transition-colors pb-1 border-b-2 border-transparent hover:border-green-600">Tentang Sistem</a>
+            {/* Tombol Tentang Sistem diubah menggunakan onClick handler */}
+            <a 
+              href="#alur-sistem" 
+              onClick={scrollToAlurSistem}
+              className="text-gray-500 hover:text-green-600 transition-colors pb-1 border-b-2 border-transparent hover:border-green-600 cursor-pointer"
+            >
+              Tentang Sistem
+            </a>
           </div>
 
           {/* Button Login/Register */}
@@ -32,10 +48,8 @@ export default function LandingPage() {
         {/* Background Sawah & Gradient Overlay */}
         <div className="absolute inset-0 z-0">
           <img src="/Sawah.jpg" alt="Sawah Background" className="w-full h-full object-cover object-center" />
-          {/* Gradient untuk membuat sisi kiri putih memudar ke kanan */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
-          {/* Overlay ringan agar teks hijau tetap kontras */}
-          <div className="absolute inset-0 bg-white/20"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent"></div>
+          <div className="absolute inset-0 bg-white/10"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex flex-col lg:flex-row items-center">
@@ -47,7 +61,8 @@ export default function LandingPage() {
               AIoT untuk Pertanian Berkelanjutan
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-[1.1] mb-6">
-              Lindungi Lahan Anda dengan <br className="hidden md:block"/>
+              Lindungi Lahan <br className="hidden md:block"/>
+              Anda dengan <br className="hidden md:block"/>
               <span className="text-green-600">Kecerdasan Buatan</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-xl leading-relaxed">
@@ -67,9 +82,7 @@ export default function LandingPage() {
                 <span className="font-bold text-sm text-gray-800">Deteksi Hama</span>
                 <span className="bg-green-500 text-white text-[10px] px-2 py-1 rounded-full font-bold">42 ekor</span>
               </div>
-              {/* Simulasi Gambar YOLO */}
               <div className="w-full h-32 bg-yellow-200/80 rounded-lg relative overflow-hidden flex items-center justify-center">
-                 {/* Fake Bounding Boxes */}
                  <div className="absolute top-2 left-4 w-6 h-6 border-2 border-green-500 rounded-sm bg-green-500/20"></div>
                  <div className="absolute bottom-4 right-8 w-5 h-5 border-2 border-green-500 rounded-sm bg-green-500/20"></div>
                  <div className="absolute top-10 left-1/2 w-8 h-8 border-2 border-green-500 rounded-sm bg-green-500/20"></div>
@@ -80,8 +93,7 @@ export default function LandingPage() {
 
             {/* Card Prediksi Forecasting */}
             <div className="absolute bottom-12 right-0 bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-2xl border border-white/50 w-72 z-30 transform hover:-translate-y-2 transition-transform duration-300">
-              <span className="font-bold text-sm text-gray-800 mb-4 block">Prediksi 3 Hari ke Depan</span>
-              {/* Simulasi Grafik SVG */}
+              <span className="font-bold text-sm text-gray-800 mb-4 block">Prediksi Lonjakan Hama</span>
               <div className="w-full h-20 mb-4">
                 <svg viewBox="0 0 100 40" className="w-full h-full overflow-visible">
                   <path fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" d="M0,35 L20,30 L40,25 L60,22 L80,15 L100,5" />
@@ -91,7 +103,6 @@ export default function LandingPage() {
                   <circle cx="60" cy="22" r="3" fill="#10b981"/>
                   <circle cx="80" cy="15" r="3" fill="#10b981"/>
                   <circle cx="100" cy="5" r="4" fill="#10b981" className="animate-pulse"/>
-                  {/* Area gradient bawah grafik */}
                   <path fill="url(#grad)" opacity="0.2" d="M0,35 L20,30 L40,25 L60,22 L80,15 L100,5 L100,40 L0,40 Z" />
                   <defs>
                     <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
@@ -133,62 +144,51 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* 4 Grid Fitur */}
+        {/* 4 Grid Fitur (Tombol Panah Dihapus) */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Card 1 */}
-          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group relative overflow-hidden">
+          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group">
             <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </div>
             <h4 className="text-lg font-bold text-gray-900 mb-3">Pemantauan Hama Otomatis</h4>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">ESP32-CAM mengambil gambar perangkap hama secara berkala dan mengirimkannya ke server untuk dianalisis.</p>
-            <button className="absolute bottom-6 right-6 w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
+            <p className="text-gray-500 text-sm leading-relaxed mb-2">ESP32-CAM mengambil gambar perangkap hama secara berkala dan mengirimkannya ke server untuk dianalisis.</p>
           </div>
 
           {/* Card 2 */}
-          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group relative overflow-hidden">
+          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group">
             <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
             </div>
             <h4 className="text-lg font-bold text-gray-900 mb-3">AI Pest Counting</h4>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">Computer Vision mendeteksi dan menghitung jumlah hama secara otomatis dari citra perangkap.</p>
-            <button className="absolute bottom-6 right-6 w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
+            <p className="text-gray-500 text-sm leading-relaxed mb-2">Computer Vision mendeteksi dan menghitung jumlah hama secara otomatis dari citra perangkap.</p>
           </div>
 
           {/* Card 3 */}
-          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group relative overflow-hidden">
+          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group">
             <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
             </div>
             <h4 className="text-lg font-bold text-gray-900 mb-3">Prediksi Populasi Hama</h4>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">Sistem menganalisis data historis untuk memprediksi potensi peningkatan populasi hama di masa mendatang.</p>
-            <button className="absolute bottom-6 right-6 w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
+            <p className="text-gray-500 text-sm leading-relaxed mb-2">Sistem menganalisis data historis untuk memprediksi potensi peningkatan populasi hama di masa mendatang.</p>
           </div>
 
           {/* Card 4 */}
-          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group relative overflow-hidden">
+          <div className="bg-gray-50 hover:bg-white rounded-3xl p-8 transition-all hover:shadow-xl border border-transparent hover:border-gray-100 group">
             <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6">
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
             </div>
             <h4 className="text-lg font-bold text-gray-900 mb-3">Peringatan Serangan Hama</h4>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">Sistem memberikan peringatan ketika jumlah hama terdeteksi melewati batas aman yang telah ditentukan.</p>
-            <button className="absolute bottom-6 right-6 w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-            </button>
+            <p className="text-gray-500 text-sm leading-relaxed mb-2">Sistem memberikan peringatan ketika jumlah hama terdeteksi melewati batas aman yang telah ditentukan.</p>
           </div>
 
         </div>
       </section>
 
-      {/* ================= WORKFLOW SECTION ================= */}
-      <section className="bg-white px-6 lg:px-8 pb-10">
+      {/* ================= WORKFLOW SECTION (Ditambahkan ID 'alur-sistem') ================= */}
+      {/* Scroll-margin ditambahkan agar saat di-klik, navbar tidak menutupi judul */}
+      <section id="alur-sistem" className="bg-white px-6 lg:px-8 pb-10 scroll-mt-24">
         <div className="max-w-7xl mx-auto bg-green-50/50 border border-green-100 rounded-[2.5rem] p-8 md:p-12 flex flex-col xl:flex-row items-center gap-12">
           
           {/* Header Workflow */}
