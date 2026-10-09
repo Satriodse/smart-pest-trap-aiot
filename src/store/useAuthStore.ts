@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface AuthState {
-  // Menyimpan data user yang sedang aktif
-  user: { name: string; email: string; role?: string } | null;
-  // Fungsi untuk memicu login
-  login: (userData: { name: string; email: string; role?: string }) => void;
+  // Menyimpan data user yang sedang aktif (ditambahkan properti phone)
+  user: { name: string; email: string; role?: string; phone?: string } | null;
+  // Fungsi untuk memicu login (ditambahkan properti phone)
+  login: (userData: { name: string; email: string; role?: string; phone?: string }) => void;
   // Fungsi untuk logout
   logout: () => void;
 }
