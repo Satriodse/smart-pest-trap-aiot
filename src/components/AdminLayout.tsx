@@ -39,15 +39,14 @@ export default function AdminLayout() {
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans text-slate-800 overflow-hidden antialiased">
       
-      {/* ================= SIDEBAR KIRI (ADMIN - TEMA BIRU) ================= */}
+      {/* ================= SIDEBAR KIRI ================= */}
       <aside className="w-[260px] bg-[#f8fafc] flex flex-col justify-between hidden md:flex z-20">
         <div>
           {/* Logo & Brand Admin */}
           <div className="h-24 flex flex-col justify-center px-6 gap-1">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold">
-                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-              </div>
+              {/* GAMBAR LOGO DIPERBARUI KE LogoWeb.png */}
+              <img src="/LogoWeb.png" alt="Logo Smart Pest Trap" className="w-8 h-8 object-contain drop-shadow-sm" />
               <span className="font-extrabold text-[#1a365d] text-xl tracking-tight">Smart Pest Trap</span>
             </div>
             <span className="text-[10px] text-blue-500 font-semibold uppercase tracking-wider ml-10">AIoT Pest Monitoring System</span>
@@ -56,7 +55,6 @@ export default function AdminLayout() {
           {/* Menu Navigasi Admin */}
           <nav className="px-4 py-2 space-y-1 mt-2">
             {navItems.map((item) => {
-              // Exact match untuk dashboard admin agar tidak aktif terus
               const isActive = item.path === '/admin' 
                 ? location.pathname === '/admin' 
                 : location.pathname.includes(item.path);
@@ -67,7 +65,7 @@ export default function AdminLayout() {
                   to={item.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
                     isActive 
-                      ? "bg-[#e1effe] text-blue-700 font-bold" 
+                      ? "bg-[#e1effe] text-blue-700 font-bold shadow-sm" 
                       : "text-[#475569] hover:bg-white hover:shadow-sm"
                   }`}
                 >
@@ -92,10 +90,10 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* ================= AREA KONTEN KANAN (KONTEN ADMIN) ================= */}
+      {/* ================= AREA KONTEN KANAN ================= */}
       <div className="flex-1 flex flex-col min-w-0 bg-white rounded-l-[2.5rem] border-l border-slate-200 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.05)] overflow-hidden">
         
-        {/* Top Header Admin (Tanggal & Jam) */}
+        {/* Top Header Admin */}
         <header className="px-8 pt-8 pb-4 flex justify-between items-start">
            <div>
               <h1 className="text-3xl font-bold text-[#1a365d] tracking-tight">Selamat Datang, Admin</h1>
@@ -115,7 +113,7 @@ export default function AdminLayout() {
            </div>
         </header>
 
-        {/* ================= OUTLET (Konten Halaman Admin) ================= */}
+        {/* ================= OUTLET (Konten Admin) ================= */}
         <main className="flex-1 overflow-x-hidden overflow-y-auto px-8 pb-8">
           <Outlet />
         </main>
