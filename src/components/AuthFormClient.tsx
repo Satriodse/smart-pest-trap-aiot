@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+// IMPORT ZUSTAND
+import { useAuthStore } from "../store/useAuthStore";
 
 // Skema validasi Zod sesuai Bab 5 (Strict Runtime Validation)
 const loginSchema = z.object({
@@ -13,13 +15,14 @@ const loginSchema = z.object({
 
 export default function AuthFormClient() {
   const navigate = useNavigate();
+  // Panggil aksi login dari Zustand
+  const login = useAuthStore((state) => state.login);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,33 +43,54 @@ export default function AuthFormClient() {
     }
 
     // ==========================================
-    // SIMULASI CEK DATABASE (Tanpa XAMPP/Backend)
+    // SIMULASI CEK DATABASE CERDAS
     // ==========================================
-    const savedUserStr = localStorage.getItem("mock_db_user");
+    let usersDB: any[] = [];
     
-    // Mengecek apakah ada data yang pernah didaftarkan
-    if (savedUserStr) {
-      const savedUser = JSON.parse(savedUserStr);
-      
-      // Jika email dan password COCOK dengan data registrasi
-      if (savedUser.email === email && savedUser.password === password) {
-        
-        // Cek apakah login sebagai admin atau user biasa
-        const isAdmin = email.toLowerCase().includes("admin");
-
-        document.cookie = `uns_session=${isAdmin ? "admin-token" : "user-token"}; path=/`;
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        if (isAdmin) {
-          navigate("/admin");
-        } else {
-          navigate("/dashboard");
-        }
-        return; // Hentikan eksekusi setelah berhasil login
-      }
+    // Ambil data jika Anda pernah mendaftar via halaman Register
+    const savedSingleUser = localStorage.getItem("mock_db_user");
+    
+    if (savedSingleUser) {
+      // Jika pernah mendaftar, masukkan ke array DB
+      usersDB.push(JSON.parse(savedSingleUser));
     }
 
-    // Jika kode sampai di sini, berarti email/sandi salah atau belum terdaftar
+    // AKUN DEFAULT: Jika DB masih kosong, sediakan 2 akun ini agar tidak perlu daftar
+    if (usersDB.length === 0) {
+      usersDB = [
+        { name: "Admin Utama", email: "admin@gmail.com", password: "password123" },
+        { name: "Satrio Petani", email: "petani@gmail.com", password: "password123" }
+      ];
+    }
+
+    // Cari kecocokan email dan password di dalam "database"
+    const foundUser = usersDB.find(u => u.email === email && u.password === password);
+
+    if (foundUser) {
+      // Cek role admin
+      const isAdmin = foundUser.email.toLowerCase().includes("admin");
+
+      // ====================================================
+      // INI KUNCI PERBAIKANNYA: Simpan data ke Zustand Store
+      // ====================================================
+      login({ 
+        name: foundUser.name, 
+        email: foundUser.email,
+        role: isAdmin ? "Admin" : "User"
+      });
+
+      document.cookie = `uns_session=${isAdmin ? "admin-token" : "user-token"}; path=/`;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      if (isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+      return; // Hentikan eksekusi setelah berhasil login
+    }
+
+    // Jika salah sandi / email
     setErrors({ password: "Email atau kata sandi salah, atau belum terdaftar." });
     setIsLoading(false);
   };
@@ -105,7 +129,6 @@ export default function AuthFormClient() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              // DITAMBAHKAN: text-gray-900 font-medium
               className={`w-full pl-11 pr-4 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}
@@ -138,7 +161,6 @@ export default function AuthFormClient() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              // DITAMBAHKAN: text-gray-900 font-medium
               className={`w-full pl-11 pr-12 py-3.5 bg-[#f8fafc] border rounded-xl text-sm text-gray-900 font-medium outline-none transition-all placeholder-gray-400 focus:ring-2 focus:ring-[#148348] ${
                 errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#148348]"
               }`}
