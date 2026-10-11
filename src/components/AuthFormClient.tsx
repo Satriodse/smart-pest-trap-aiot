@@ -78,71 +78,72 @@ export default function AuthFormClient() {
       }
     }
 
-    // 2. SIMULASI DATABASE LOCALSTORAGE
-    let usersDB: any[] = JSON.parse(localStorage.getItem("mock_database_users") || "[]");
-    
-    // Akun Default (agar Anda tidak perlu daftar ulang jika DB terhapus)
-    if (usersDB.length === 0) {
-      usersDB = [
-        { name: "Admin Utama", email: "admin@gmail.com", phone: "081234567890", password: "password123", role: "Admin" },
-        { name: "Satrio Petani", email: "petani@gmail.com", phone: "081234567891", password: "password123", role: "User" }
-      ];
-      localStorage.setItem("mock_database_users", JSON.stringify(usersDB));
-    }
-
-    if (isLogin) {
-      // === PROSES LOGIN ===
-      const foundUser = usersDB.find((u: any) => u.email === email && u.password === password);
-
-      if (foundUser) {
-        const isAdmin = foundUser.email.toLowerCase().includes("admin") || foundUser.role === "Admin";
-        
-        // Simpan data lengkap ke Zustand Store
-        login({ 
-          name: foundUser.name, 
-          email: foundUser.email,
-          phone: foundUser.phone,
-          role: isAdmin ? "Admin" : "User"
+    // 2. KONEKSI KE API FLASK BACKEND
+    try {
+      if (isLogin) {
+        // === PROSES LOGIN API ===
+        const response = await fetch("http://127.0.0.1:5000/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
         });
 
-        document.cookie = `uns_session=${isAdmin ? "admin-token" : "user-token"}; path=/`;
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        const data = await response.json();
 
-        if (isAdmin) {
-          navigate("/admin");
+        if (response.ok) {
+          // Simpan data ke Zustand Store
+          login({ 
+            name: data.user.nama_lengkap, 
+            email: data.user.email,
+            phone: data.user.no_telepon,
+            role: data.user.role
+          });
+
+          // Simpan token JWT di cookie
+          document.cookie = `uns_session=${data.token}; path=/`;
+
+          // Arahkan berdasarkan Role
+          if (data.user.role === "Admin") {
+            navigate("/admin");
+          } else {
+            navigate("/dashboard");
+          }
         } else {
-          navigate("/dashboard");
+          setErrors({ general: data.error || "Gagal masuk. Silakan periksa kredensial Anda." });
         }
+
       } else {
-        setErrors({ general: "Email atau kata sandi salah, atau belum terdaftar." });
+        // === PROSES REGISTER API ===
+        const response = await fetch("http://127.0.0.1:5000/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nama_lengkap: name,
+            no_telepon: phone,
+            email: email,
+            password: password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Pendaftaran berhasil! Silakan masuk dengan akun Anda.");
+          navigate("/login");
+        } else {
+          if (data.error && data.error.includes("Email sudah terdaftar")) {
+            setErrors({ email: data.error });
+          } else {
+            setErrors({ general: data.error || "Gagal mendaftar." });
+          }
+        }
       }
-    } else {
-      // === PROSES REGISTER ===
-      const userExists = usersDB.find((u: any) => u.email === email);
-      if (userExists) {
-        setErrors({ email: "Email sudah terdaftar!" });
-        setIsLoading(false);
-        return;
-      }
-
-      const isAdmin = email.toLowerCase().includes("admin");
-      const newUser = {
-        name,
-        phone,
-        email,
-        password,
-        role: isAdmin ? "Admin" : "User",
-      };
-
-      // Simpan akun baru ke LocalStorage
-      usersDB.push(newUser);
-      localStorage.setItem("mock_database_users", JSON.stringify(usersDB));
-
-      alert("Pendaftaran berhasil! Silakan masuk dengan akun Anda.");
-      navigate("/login");
+    } catch (error) {
+      console.error("Koneksi Error:", error);
+      setErrors({ general: "Terjadi kesalahan saat menghubungi server backend." });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
