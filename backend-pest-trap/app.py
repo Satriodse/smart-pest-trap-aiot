@@ -10,8 +10,8 @@ app = Flask(__name__)
 # Konfigurasi CORS agar React bisa mengambil API ini
 CORS(app)
 
-# Konfigurasi Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Satrio0813@127.0.0.1:3306/smart_pest_trap'
+# Konfigurasi Database (PostgreSQL Supabase)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.pfnirjdxrjqoxsfykwfs:Satrio0813D3TIUNS@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Konfigurasi JWT untuk masa aktif token (misal: 1 hari)
@@ -33,7 +33,7 @@ class User(db.Model):
     no_telepon = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum('Admin', 'Petani', 'User'), default='Petani')
+    role = db.Column(db.String(50), default='Petani') # Diubah menjadi String(50) agar aman di PostgreSQL
     created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
 # ==========================================
@@ -43,7 +43,7 @@ class User(db.Model):
 # 1. Tes Route
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({"message": "Backend Smart Pest Trap API berjalan!"}), 200
+    return jsonify({"message": "Backend Smart Pest Trap API berjalan dan terhubung ke Supabase!"}), 200
 
 # 2. Endpoint Registrasi (Daftar Akun)
 @app.route('/register', methods=['POST'])
@@ -70,7 +70,7 @@ def register():
         password=hashed_password
     )
 
-    # Simpan ke MySQL
+    # Simpan ke Supabase (PostgreSQL)
     try:
         db.session.add(new_user)
         db.session.commit()
