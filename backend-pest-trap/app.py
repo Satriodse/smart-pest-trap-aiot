@@ -46,8 +46,12 @@ def index():
     return jsonify({"message": "Backend Smart Pest Trap API berjalan dan terhubung ke Supabase!"}), 200
 
 # 2. Endpoint Registrasi (Daftar Akun)
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST', 'OPTIONS'])
 def register():
+    # Tangkap preflight CORS dari browser React
+    if request.method == 'OPTIONS':
+        return jsonify({"message": "CORS Preflight OK"}), 200
+
     data = request.get_json()
 
     # Validasi input kosong
@@ -80,8 +84,12 @@ def register():
         return jsonify({"error": f"Terjadi kesalahan server: {str(e)}"}), 500
 
 # 3. Endpoint Login
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST', 'OPTIONS'])
 def login():
+    # Tangkap preflight CORS dari browser React
+    if request.method == 'OPTIONS':
+        return jsonify({"message": "CORS Preflight OK"}), 200
+
     data = request.get_json()
 
     if not data or not data.get('email') or not data.get('password'):
