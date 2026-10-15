@@ -7,11 +7,11 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Konfigurasi CORS agar React bisa mengambil API ini
-CORS(app)
+# Konfigurasi CORS Super Kuat untuk semua rute
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Konfigurasi Database (PostgreSQL Supabase)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres.pfnirjdxrjqoxsfykwfs:Satrio0813D3TIUNS@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres.pfnirjdxrjqoxsfykwfs:Satrio0813D3TIUNS@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Konfigurasi JWT untuk masa aktif token (misal: 1 hari)
@@ -33,40 +33,34 @@ class User(db.Model):
     no_telepon = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(50), default='Petani') # Diubah menjadi String(50) agar aman di PostgreSQL
+    role = db.Column(db.String(50), default='Petani')
     created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
 # ==========================================
 # API ENDPOINTS
 # ==========================================
 
-# 1. Tes Route
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({"message": "Backend Smart Pest Trap API berjalan dan terhubung ke Supabase!"}), 200
 
-# 2. Endpoint Registrasi (Daftar Akun)
 @app.route('/register', methods=['POST', 'OPTIONS'])
 def register():
-    # Tangkap preflight CORS dari browser React
+    # Tangkap preflight CORS secara eksplisit
     if request.method == 'OPTIONS':
         return jsonify({"message": "CORS Preflight OK"}), 200
 
     data = request.get_json()
 
-    # Validasi input kosong
     if not data or not data.get('nama_lengkap') or not data.get('no_telepon') or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Harap isi semua data (nama, nomor telepon, email, password)"}), 400
 
-    # Cek apakah email sudah pernah didaftarkan
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
         return jsonify({"error": "Email sudah terdaftar, silakan gunakan email lain."}), 409
 
-    # NFR-01: Hash password menggunakan Bcrypt sebelum disimpan
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
 
-    # Buat objek User baru
     new_user = User(
         nama_lengkap=data['nama_lengkap'],
         no_telepon=data['no_telepon'],
@@ -74,7 +68,6 @@ def register():
         password=hashed_password
     )
 
-    # Simpan ke Supabase (PostgreSQL)
     try:
         db.session.add(new_user)
         db.session.commit()
@@ -83,10 +76,8 @@ def register():
         db.session.rollback()
         return jsonify({"error": f"Terjadi kesalahan server: {str(e)}"}), 500
 
-# 3. Endpoint Login
 @app.route('/login', methods=['POST', 'OPTIONS'])
 def login():
-    # Tangkap preflight CORS dari browser React
     if request.method == 'OPTIONS':
         return jsonify({"message": "CORS Preflight OK"}), 200
 
@@ -95,17 +86,13 @@ def login():
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Email dan password wajib diisi"}), 400
 
-    # Cari user berdasarkan email
     user = User.query.filter_by(email=data['email']).first()
 
-    # Validasi user ada & password hash cocok dengan inputan
     if user and bcrypt.check_password_hash(user.password, data['password']):
-        # Buat token akses (JWT)
         access_token = create_access_token(
             identity=str(user.id_user), 
             additional_claims={"role": user.role, "nama": user.nama_lengkap}
         )
-        
         return jsonify({
             "message": "Login berhasil!",
             "token": access_token,
