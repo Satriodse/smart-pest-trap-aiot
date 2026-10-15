@@ -82,7 +82,7 @@ export default function AuthFormClient() {
     try {
       if (isLogin) {
         // === PROSES LOGIN API ===
-        const response = await fetch("http://127.0.0.1:5000/login", {
+        const response = await fetch("https://smart-pest-trap-backend.vercel.app/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -114,7 +114,7 @@ export default function AuthFormClient() {
 
       } else {
         // === PROSES REGISTER API ===
-        const response = await fetch("http://127.0.0.1:5000/register", {
+        const response = await fetch("https://smart-pest-trap-backend.vercel.app/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
