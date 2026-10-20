@@ -41,6 +41,7 @@ except Exception as e:
 # ==========================================
 # 1. MODEL DATABASE
 # ==========================================
+# 1. Tabel Users
 class User(db.Model):
     __tablename__ = 'users'
     id_user = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -51,7 +52,17 @@ class User(db.Model):
     role = db.Column(db.String(50), default='Petani')
     created_at = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
-# TABEL BARU: Menyimpan riwayat deteksi hama (FR-02 & FR-03)
+# 2. Tabel perangkat_iot
+class PerangkatIoT(db.Model):
+    __tablename__ = 'perangkat_iot'
+    id_device = db.Column(db.String(50), primary_key=True) 
+    id_user = db.Column(db.Integer, db.ForeignKey('users.id_user'), nullable=False) 
+    mac_address = db.Column(db.String(50), unique=True, nullable=False) 
+    lokasi_lahan = db.Column(db.String(255), nullable=False) 
+    status_aktif = db.Column(db.String(20), server_default='aktif') 
+    batas_ambang = db.Column(db.Integer, nullable=False)
+
+# 3. Tabel detection_logs
 class DetectionLog(db.Model):
     __tablename__ = 'detection_logs'
     id_log = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -60,6 +71,25 @@ class DetectionLog(db.Model):
     # node_id disiapkan untuk FR-07 (Manajemen Perangkat) nanti
     node_id = db.Column(db.String(50), default='ESP32-CAM-01') 
     timestamp = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+
+# 4. Tabel Baru: alerts
+class Alerts(db.Model):
+    __tablename__ = 'alerts'
+    id_alert = db.Column(db.Integer, primary_key=True, autoincrement=True) 
+    id_log = db.Column(db.Integer, db.ForeignKey('detection_logs.id_log'), nullable=False) 
+    pesan_alert = db.Column(db.Text, nullable=False) 
+    status_baca = db.Column(db.String(20), server_default='unread') 
+    waktu_alert = db.Column(db.DateTime, server_default=db.func.current_timestamp())
+
+# 5. Tabel forecasting_logs 
+class ForecastingLog(db.Model):
+    __tablename__ = 'forecasting_logs'
+    id_prediksi = db.Column(db.Integer, primary_key=True, autoincrement=True) 
+    # Relasikan ke detection_logs (pemicunya)
+    id_log = db.Column(db.Integer, db.ForeignKey('detection_logs.id_log'), nullable=True) 
+    tanggal_prediksi = db.Column(db.Date, nullable=False) 
+    jumlah_prediksi = db.Column(db.Float, nullable=False) # Menyimpan output model AI
+    waktu_kalkulasi = db.Column(db.DateTime, server_default=db.func.current_timestamp())
 
 # ==========================================
 # 2. API ENDPOINTS (FR-01: LOGIN & REGISTER)
