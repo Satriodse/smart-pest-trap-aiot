@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  flask-backend:
+    build: .
+    container_name: smart-pest-backend
+    ports:
+      - "5000:5000"
+    environment:
+      # Inject link Supabase ke dalam Docker
+      - DATABASE_URL=postgresql+psycopg2://postgres.pfnirjdxrjqoxsfykwfs:Satrio0813D3TIUNS@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres
