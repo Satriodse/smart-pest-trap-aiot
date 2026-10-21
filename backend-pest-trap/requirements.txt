@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # --- Kebutuhan Web Backend & Database ---
 Flask
 Flask-SQLAlchemy
@@ -13,5 +15,7 @@ pandas==2.2.3
 numpy==2.1.3
 
 # --- Kebutuhan Deep Learning (YOLO Deteksi Gambar) ---
+torch==2.1.2+cpu
+torchvision==0.16.2+cpu
 ultralytics
 opencv-python-headless
