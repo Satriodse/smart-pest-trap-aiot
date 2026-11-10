@@ -7,7 +7,10 @@ Flask-Bcrypt
 Flask-JWT-Extended
 Flask-Cors
 psycopg2-binary
-psycopg-binary
+
+# --- Kebutuhan Koneksi Supabase & Environment ---
+supabase==2.3.4
+python-dotenv==1.0.0
 
 # --- Kebutuhan Machine Learning (Forecasting) ---
 scikit-learn==1.6.1

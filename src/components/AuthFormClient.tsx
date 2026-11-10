@@ -12,7 +12,7 @@ const loginSchema = z.object({
   password: z.string().min(8, "Kata sandi minimal 8 karakter"),
 });
 
-// 2. Skema untuk Register (Ditambah Nama, No HP, dan Konfirmasi Password)
+// 2. Skema untuk Register
 const registerSchema = z.object({
   name: z.string().min(3, "Nama lengkap minimal 3 karakter"),
   phone: z.string().min(10, "Nomor handphone tidak valid (min. 10 angka)"),
@@ -82,7 +82,7 @@ export default function AuthFormClient() {
     try {
       if (isLogin) {
         // === PROSES LOGIN API ===
-        const response = await fetch("https://smart-pest-trap-backend.vercel.app/login", {
+        const response = await fetch("http://localhost:5000/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
@@ -91,8 +91,9 @@ export default function AuthFormClient() {
         const data = await response.json();
 
         if (response.ok) {
-          // Simpan data ke Zustand Store
+          // Simpan data ke Zustand Store (TERMASUK id_user)
           login({ 
+            id_user: data.user.id_user,
             name: data.user.nama_lengkap, 
             email: data.user.email,
             phone: data.user.no_telepon,
@@ -114,7 +115,7 @@ export default function AuthFormClient() {
 
       } else {
         // === PROSES REGISTER API ===
-        const response = await fetch("https://smart-pest-trap-backend.vercel.app/register", {
+        const response = await fetch("http://localhost:5000/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

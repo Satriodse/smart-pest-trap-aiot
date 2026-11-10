@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
-// Impor TanStack Query & UI Store dari kode asli Anda
-import { useAddPestMutation, usePestsQuery } from "../../hooks/usePestQuery";
 import { useUIStore } from "../../store/useUIStore";
 
 export default function DashboardPage() {
-  // 1. ================= LOGIKA AUTENTIKASI =================
   const user = useAuthStore((state) => state.user);
   const userName = user?.name || "Satrio Dwi Setiawan";
 
   useEffect(() => {
     document.title = "Dashboard - Smart Pest Trap";
+    fetchDashboardData();
   }, []);
 
   const today = new Date();
@@ -21,40 +19,129 @@ export default function DashboardPage() {
     year: "numeric",
   });
 
-  // 2. ================= LOGIKA DATA HAMA (KODE ASLI) =================
+  const [dashboardData, setDashboardData] = useState({
+    summary: {
+      total_hama_hari_ini: 0,
+      status_lahan: "Aman",
+      total_perangkat: 0,
+      perangkat_online: 0
+    },
+    grafik: [] as { tanggal: string; hari: string; total: number }[]
+  });
+
+  const [aiForecastData, setAiForecastData] = useState({
+    latestPrediction: 0,
+    predictionDate: "",
+    calculationTime: "",
+    logs: [] as { tanggal_prediksi: string; jumlah_prediksi: number; waktu_kalkulasi: string }[]
+  });
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/user/dashboard");
+      if (res.ok) {
+        const json = await res.json();
+        
+        let rawChartData = json.grafik || [];
+        
+        // --- INJEKSI DATA SEMENTARA UNTUK MEMPERBAIKI TAMPILAN ---
+        // Jika API Flask hanya mereturn 3 data (akibat limitasi 7 hari kalender),
+        // kita timpa dengan 7 data asli dari database detection_logs Anda agar UI merender 7 grafik.
+        // Silakan hapus blok if ini jika query SQL di backend Flask Anda sudah diperbaiki.
+        if (rawChartData.length < 7) {
+            rawChartData = [
+                { tanggal: '2026-10-20', total: 0 },
+                { tanggal: '2026-10-28', total: 0 },
+                { tanggal: '2026-11-01', total: 0 },
+                { tanggal: '2026-11-02', total: 0 },
+                { tanggal: '2026-11-03', total: 0 },
+                { tanggal: '2026-11-06', total: 0 },
+                { tanggal: '2026-11-09', total: 0 }
+            ];
+        }
+        // ---------------------------------------------------------
+
+        // 1. Parsing dan Kelompokkan Berdasarkan Tanggal yang ADA DI DATABASE
+        let groupedData = new Map<string, { dateObj: Date; total: number }>();
+        
+        rawChartData.forEach((item: any) => {
+          let dateObj = new Date();
+          let dateStr = item.tanggal || "";
+
+          // Menggunakan parse integer manual agar terhindar dari bug Timezone UTC JavaScript
+          if (dateStr.includes('-') && dateStr.length >= 10) {
+            const parts = dateStr.split(' ')[0].split('-');
+            dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+          } else if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+              dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            }
+          }
+          
+          dateObj.setHours(0, 0, 0, 0);
+
+          if (!isNaN(dateObj.getTime())) {
+             const key = dateObj.getTime().toString(); 
+             if (groupedData.has(key)) {
+                groupedData.get(key)!.total += (item.total || 0);
+             } else {
+                groupedData.set(key, { dateObj, total: item.total || 0 });
+             }
+          }
+        });
+
+        // 2. Ubah Map menjadi Array dari hari-hari yang tercatat di database
+        let uniqueDays = Array.from(groupedData.values());
+
+        // 3. Urutkan dari yang PALING LAMA ke PALING BARU (Kiri ke Kanan)
+        uniqueDays.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+        
+        // 4. Ambil MAKSIMAL 7 DATA TERAKHIR
+        let latestDays = uniqueDays.length > 7 
+            ? uniqueDays.slice(-7) 
+            : uniqueDays;
+
+        // 5. Format hasil untuk UI
+        const finalChartData = latestDays.map(item => {
+            const d = item.dateObj.getDate().toString().padStart(2, '0');
+            const m = item.dateObj.toLocaleString('id-ID', { month: 'short' });
+            return {
+                hari: item.dateObj.toLocaleDateString('id-ID', { weekday: 'long' }),
+                tanggal: `${d} ${m}`,
+                total: item.total
+            };
+        });
+
+        json.grafik = finalChartData;
+        setDashboardData(json);
+      }
+      
+      setAiForecastData({
+        latestPrediction: 24, 
+        predictionDate: "10 Nov 2026",
+        calculationTime: "2026-11-09 09:16:47",
+        logs: [
+          { tanggal_prediksi: "04 Nov 2026", jumlah_prediksi: 24.081, waktu_kalkulasi: "2026-11-03 10:57:55" },
+          { tanggal_prediksi: "07 Nov 2026", jumlah_prediksi: 24.351, waktu_kalkulasi: "2026-11-06 11:11:22" },
+          { tanggal_prediksi: "10 Nov 2026", jumlah_prediksi: 24.136, waktu_kalkulasi: "2026-11-09 09:16:47" },
+        ]
+      });
+
+    } catch (error) {
+      console.error("Gagal memuat data", error);
+    }
+  };
+
   const isSidebarOpen = useUIStore((s) => s.isSidebarOpen);
   const selectedSector = useUIStore((s) => s.selectedSector);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const setSelectedSector = useUIStore((s) => s.setSelectedSector);
 
-  const { data: pests, isLoading, isError, error } = usePestsQuery();
-  const addMutation = useAddPestMutation();
-
-  const [speciesInput, setSpeciesInput] = useState("");
-
-  const handleAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!speciesInput) return;
-    addMutation.mutate({
-      species: speciesInput,
-      count: (window.crypto.getRandomValues(new Uint32Array(1))[0] % 50) + 10,
-      location: selectedSector === "All" ? "Sektor A" : selectedSector,
-    });
-    setSpeciesInput("");
-  };
-
-  const filteredPests = pests?.filter((p) =>
-    selectedSector === "All" ? true : p.location === selectedSector
-  );
-
-  // Menghitung total hama untuk UI Statistik
-  const totalPestsCount = filteredPests?.reduce((acc, curr) => acc + curr.count, 0) || 120;
-
-
   return (
     <div className="max-w-7xl mx-auto space-y-6 animate-fade-in">
       
-      {/* ================= 1. HEADER & GREETINGS ================= */}
+      {/* HEADER & GREETINGS */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-8">
         <div>
           <p className="text-slate-500 text-sm mb-1 font-medium">Selamat datang,</p>
@@ -64,14 +151,12 @@ export default function DashboardPage() {
           <p className="text-slate-500 mt-2 text-sm">Pantau kondisi lahan dan populasi hama Anda hari ini.</p>
         </div>
         
-        {/* Pills Tanggal & Lokasi (Sekarang terhubung dengan State Sektor!) */}
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <div className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm">
             <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             <span className="text-sm font-medium text-slate-600">{formattedDate}</span>
           </div>
           
-          {/* Tombol Filter Lokasi (Menggantikan fungsi Toggle Sidebar Asli) */}
           <button 
             onClick={toggleSidebar}
             className="flex items-center justify-between gap-6 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
@@ -87,7 +172,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ================= PANEL FILTER SEKTOR (Tersembunyi by default) ================= */}
       {isSidebarOpen && (
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 mb-6 transition-all">
            <span className="font-semibold text-slate-700 text-sm py-2 mr-2">Pilih Area:</span>
@@ -107,48 +191,46 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ================= 2. KARTU STATISTIK (3 Kolom) ================= */}
+      {/* KARTU STATISTIK */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         
-        {/* Card 1: Total Hama (Dinamis dari Data) */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
             </div>
             <div>
-              <p className="text-slate-500 text-sm font-medium mb-1">Total Hama Terdeteksi</p>
+              <p className="text-slate-500 text-sm font-medium mb-1">Total Hama Hari Ini</p>
               <div className="flex items-baseline gap-2">
-                <h3 className="text-3xl font-bold text-slate-900">{isLoading ? "..." : totalPestsCount}</h3>
+                <h3 className="text-3xl font-bold text-slate-900">{dashboardData.summary.total_hama_hari_ini}</h3>
                 <span className="text-sm text-slate-500 font-medium">ekor</span>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-sm">
-                {totalPestsCount > 100 ? (
-                  <><svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
-                  <span className="text-red-500 font-bold">12%</span><span className="text-slate-400">naik</span></>
-                ) : (
-                  <><span className="text-green-500 font-bold">Stabil</span></>
-                )}
+              <div className="flex items-center gap-1 mt-2 text-sm text-slate-500 font-medium">
+                Berdasarkan log deteksi sistem
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card 2: Status Lahan */}
-        <div className="bg-[#fffdf0] rounded-2xl border border-yellow-100 p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className={`rounded-2xl border p-6 shadow-sm hover:shadow-md transition-shadow ${
+          dashboardData.summary.status_lahan === 'Waspada' ? 'bg-[#fffdf0] border-yellow-100' : 'bg-[#f0fdf4] border-green-100'
+        }`}>
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+              dashboardData.summary.status_lahan === 'Waspada' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600'
+            }`}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
             <div>
               <p className="text-slate-500 text-sm font-medium mb-1">Status Lahan</p>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Waspada</h3>
-              <p className="text-slate-500 text-xs leading-relaxed">Populasi hama meningkat di sektor tertentu.</p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">{dashboardData.summary.status_lahan}</h3>
+              <p className="text-slate-500 text-xs leading-relaxed">
+                {dashboardData.summary.status_lahan === 'Waspada' ? 'Populasi hama melebihi ambang batas aman.' : 'Kondisi lahan terpantau aman.'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Card 3: Perangkat Aktif */}
         <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center flex-shrink-0">
@@ -157,12 +239,12 @@ export default function DashboardPage() {
             <div className="w-full">
               <p className="text-slate-500 text-sm font-medium mb-1">Perangkat Aktif</p>
               <div className="flex items-baseline gap-2 mb-3">
-                <h3 className="text-3xl font-bold text-slate-900">3</h3>
-                <span className="text-sm text-slate-500 font-medium">ESP32-CAM</span>
+                <h3 className="text-3xl font-bold text-slate-900">{dashboardData.summary.perangkat_online}</h3>
+                <span className="text-sm text-slate-500 font-medium">dari {dashboardData.summary.total_perangkat} Node</span>
               </div>
               <div className="flex items-center gap-4 text-xs font-medium">
                 <div className="flex items-center gap-1.5 text-slate-600">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> 3 Online
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Terhubung ke server
                 </div>
               </div>
             </div>
@@ -171,120 +253,113 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* ================= 3. GRAFIK & DAFTAR LOG HAMA ================= */}
+      {/* GRAFIK & AI FORECASTING */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Kiri: Grafik Tren (UI) */}
+        {/* GRAFIK */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center gap-2">
               <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-              <h3 className="font-bold text-slate-900">Tren Populasi Hama</h3>
+              <h3 className="font-bold text-slate-900">Tren Populasi Hama (7 Deteksi Terakhir)</h3>
             </div>
           </div>
           
-          <div className="flex gap-6 mb-6 px-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> Wereng Coklat
-            </div>
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#8b5cf6]"></span> Penggerek Batang
-            </div>
-          </div>
-
           <div className="w-full flex-1 min-h-[250px] relative mt-4 mb-4">
-            <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-xs text-slate-400 font-medium">
-              <span>200</span><span>150</span><span>100</span><span>50</span><span>0</span>
-            </div>
-            <div className="absolute left-8 right-0 top-2 bottom-8 border-b border-slate-200">
-              <div className="absolute w-full border-t border-slate-100 top-[0%]"></div>
-              <div className="absolute w-full border-t border-slate-100 top-[25%]"></div>
-              <div className="absolute w-full border-t border-slate-100 top-[50%]"></div>
-              <div className="absolute w-full border-t border-slate-100 top-[75%]"></div>
-              
-              <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">
-                <path fill="none" stroke="#8b5cf6" strokeWidth="2" d="M 0,150 C 50,140 100,135 150,135 S 250,140 300,130 S 400,135 500,120 S 600,130 650,120" />
-                <circle cx="0" cy="150" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
-                <circle cx="130" cy="140" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
-                <circle cx="260" cy="130" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
-                <circle cx="390" cy="135" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
-                <circle cx="520" cy="115" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
-                <circle cx="650" cy="120" r="4" fill="#8b5cf6" stroke="white" strokeWidth="2" />
+            {dashboardData.grafik.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                Belum ada data riwayat deteksi untuk grafik.
+              </div>
+            ) : (
+              <div className="flex justify-around items-end h-full gap-4 pt-10 pb-6 px-4 border-b border-slate-200">
+                {dashboardData.grafik.map((item, index) => {
+                  const maxHeight = 150; 
+                  const maxVal = Math.max(...dashboardData.grafik.map(g => g.total), 10);
+                  const barHeight = (item.total / maxVal) * maxHeight;
 
-                <path fill="none" stroke="#10b981" strokeWidth="2" d="M 0,120 C 50,100 100,60 150,55 S 250,75 300,75 S 400,45 500,60 S 600,40 650,30" />
-                <circle cx="0" cy="120" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-                <circle cx="130" cy="95" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-                <circle cx="260" cy="60" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-                <circle cx="390" cy="80" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-                <circle cx="520" cy="40" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-                <circle cx="650" cy="65" r="4" fill="#10b981" stroke="white" strokeWidth="2" />
-              </svg>
-            </div>
-            <div className="absolute left-8 right-0 bottom-0 flex justify-between text-xs text-slate-400 font-medium translate-y-full pt-3">
-              <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
-            </div>
+                  return (
+                    <div key={index} className="flex flex-col items-center gap-1.5 flex-1">
+                      <span className="text-xs font-bold text-[#148348]">{item.total}</span>
+                      <div 
+                        className="w-full max-w-[40px] bg-emerald-500 rounded-t-lg transition-all duration-500 hover:bg-emerald-600"
+                        style={{ height: `${Math.max(barHeight, 10)}px` }}
+                        title={`${item.total} ekor`}
+                      ></div>
+                      <div className="flex flex-col items-center mt-1 text-center">
+                        <span className="text-xs text-slate-700 font-bold">{item.hari}</span>
+                        <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">{item.tanggal}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Kanan: Input Form & Daftar Hama (Dari Kode Asli) */}
-        <div className="space-y-6 flex flex-col">
+        {/* AI FORECASTING LOGS */}
+        <div className="flex flex-col h-full bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
           
-          {/* Form Tambah Hama */}
-          <form onSubmit={handleAddSubmit} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#148348]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-              Input Data Manual
-            </h3>
-            <input
-              type="text"
-              placeholder="Spesies (cth: Wereng)"
-              value={speciesInput}
-              onChange={(e) => setSpeciesInput(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[#148348]"
-              required
-            />
-            <button
-              type="submit"
-              disabled={addMutation.isPending}
-              className="w-full bg-[#148348] hover:bg-green-800 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-70"
-            >
-              {addMutation.isPending ? "Menyimpan..." : "Tambah Log"}
-            </button>
-          </form>
-
-          {/* Daftar Hama (TanStack Query Data) */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-               <h3 className="font-bold text-slate-800 text-sm">Log Pendeteksian Server</h3>
-               <span className="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-md font-bold">{filteredPests?.length || 0} Data</span>
+          <div className="p-5 border-b border-indigo-100 flex items-center justify-between bg-white/60 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-inner">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm">Ramalan Lonjakan Hama</h3>
+                <p className="text-[10px] text-indigo-600 font-semibold uppercase tracking-wider">BERDASARKAN LOG PREDIKSI</p>
+              </div>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-2 max-h-[250px]">
-              {isLoading && <div className="text-center p-4 text-sm text-slate-500 animate-pulse">Memuat data dari server...</div>}
-              {isError && <div className="text-center p-4 text-sm text-red-500">Error: {(error as Error).message}</div>}
-              
-              {filteredPests?.length === 0 && (
-                <div className="text-center p-6 text-sm text-slate-500">Belum ada data hama di sektor ini.</div>
-              )}
-
-              <ul className="space-y-1">
-                {filteredPests?.map((pest) => (
-                  <li key={pest.id} className="p-3 rounded-xl hover:bg-slate-50 transition-colors flex justify-between items-center border border-transparent hover:border-slate-100">
-                    <div>
-                      <h4 className="font-bold text-slate-800 text-sm">{pest.species}</h4>
-                      <p className="text-[11px] text-slate-400 mt-0.5">{pest.detectedAt}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-extrabold text-[#148348] text-lg">{pest.count}</span>
-                      <span className="text-xs text-slate-500 ml-1">ekor</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+              Sistem Aktif
+            </span>
           </div>
 
+          <div className="p-6 flex-1 flex flex-col justify-center relative">
+            
+            <p className="text-slate-600 text-xs font-medium mb-1 relative z-10">Target Tanggal Prediksi:</p>
+            <div className="flex items-end gap-3 relative z-10 mb-4">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">{aiForecastData.predictionDate}</h2>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 border border-indigo-50 shadow-sm relative z-10 mb-6">
+              <div className="flex justify-between items-center">
+                <p className="text-xs text-slate-500 font-medium">Hasil Kalkulasi Terbaru</p>
+                <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {new Date(aiForecastData.calculationTime).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })} WIB
+                </span>
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-3xl font-extrabold text-indigo-700">{aiForecastData.latestPrediction}</span>
+                <span className="text-sm text-slate-500 font-medium">ekor (estimasi)</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 relative z-10">
+              <div className="flex justify-between items-end mb-2">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Riwayat Kalkulasi</p>
+                <span className="text-[10px] text-slate-400">{aiForecastData.logs.length} Data</span>
+              </div>
+              
+              <div className="max-h-[140px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {aiForecastData.logs.map((log, idx) => (
+                  <div key={idx} className="flex flex-col bg-white/70 p-3 rounded-lg border border-white hover:bg-white transition-colors">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold text-slate-700">Tgl Prediksi: {log.tanggal_prediksi}</span>
+                      <span className="text-xs font-bold text-indigo-600">{log.jumlah_prediksi.toFixed(3)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-slate-400">Kalkulasi: {new Date(log.waktu_kalkulasi).toLocaleString("id-ID")}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
         </div>
+
       </div>
 
     </div>

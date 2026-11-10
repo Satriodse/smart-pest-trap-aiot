@@ -7,6 +7,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     document.title = "Admin Dashboard - Smart Pest Trap";
+    fetchDevices();
+    fetchUsers();
   }, []);
 
   // Menentukan tab aktif berdasarkan Route URL
@@ -14,56 +16,129 @@ export default function AdminPage() {
   if (location.pathname.endsWith('/perangkat')) activeTab = 'perangkat';
   if (location.pathname.endsWith('/pengguna')) activeTab = 'pengguna';
 
-  // State Perangkat
-  const [devices, setDevices] = useState([
-    { id: 1, name: "Perangkat A", mac: "A4:C1:38:1A:2B", location: "Sektor A", status: "Online", lastActive: "23 Jun 2025\n10:20 WIB" },
-    { id: 2, name: "Perangkat B", mac: "A4:C1:38:1A:2C", location: "Sektor B", status: "Online", lastActive: "23 Jun 2025\n10:18 WIB" },
-    { id: 3, name: "Perangkat C", mac: "A4:C1:38:1A:2D", location: "Sektor C", status: "Online", lastActive: "23 Jun 2025\n10:16 WIB" },
-    { id: 4, name: "Perangkat D", mac: "A4:C1:38:1A:2E", location: "Sektor D", status: "Offline", lastActive: "22 Jun 2025\n16:42 WIB" },
-  ]);
+  // State Perangkat (Kosong di awal, akan diisi dari database)
+  const [devices, setDevices] = useState<any[]>([]);
   const [deviceForm, setDeviceForm] = useState({ mac: "", location: "" });
 
-  // State Pengguna
-  const [users, setUsers] = useState([
-    { id: 1, name: "Satrio Dwi Setiawan", email: "admin@gmail.com", role: "Admin" },
-    { id: 2, name: "Budi Santoso", email: "petani@gmail.com", role: "User" },
-  ]);
-  const [userForm, setUserForm] = useState({ name: "", email: "", role: "User" });
+  // State Pengguna (Kosong di awal, akan diisi dari database)
+  const [users, setUsers] = useState<any[]>([]);
+  const [userForm, setUserForm] = useState({ name: "", email: "", password: "", role: "Petani" });
 
-  // FUNGSI MANAJEMEN PERANGKAT
-  const handleAddDevice = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!deviceForm.mac) return;
-    const newId = devices.length + 1;
-    setDevices([
-      ...devices,
-      {
-        id: newId,
-        name: `Perangkat Node ${newId}`,
-        mac: deviceForm.mac,
-        location: deviceForm.location || "Belum diatur",
-        status: "Online",
-        lastActive: "Baru saja\nDitambahkan",
-      },
-    ]);
-    setDeviceForm({ mac: "", location: "" });
+  // ==========================================
+  // FETCH DATA DARI BACKEND FLASK
+  // ==========================================
+  const fetchDevices = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/perangkat");
+      if (res.ok) {
+        const data = await res.json();
+        // Format data backend agar sesuai dengan struktur tabel frontend
+        const formattedData = data.map((d: any) => ({
+          id: d.id_device,
+          name: `Perangkat Node ${d.id_device.split('-')[1]}`,
+          mac: d.mac_address,
+          location: d.lokasi_lahan,
+          status: d.status_aktif === 'aktif' ? 'Online' : 'Offline',
+          lastActive: "Baru saja\nSinkronisasi", 
+        }));
+        setDevices(formattedData);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data perangkat", error);
+    }
   };
-  const deleteDevice = (id: number) => setDevices(devices.filter((d) => d.id !== id));
 
-  // FUNGSI MANAJEMEN PENGGUNA
-  const handleAddUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!userForm.name || !userForm.email) return;
-    setUsers([...users, { id: Date.now(), ...userForm }]);
-    setUserForm({ name: "", email: "", role: "User" });
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/users");
+      if (res.ok) {
+        const data = await res.json();
+        const formattedData = data.map((u: any) => ({
+          id: u.id_user,
+          name: u.nama_lengkap,
+          email: u.email,
+          role: u.role,
+        }));
+        setUsers(formattedData);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data pengguna", error);
+    }
   };
-  const deleteUser = (id: number) => setUsers(users.filter((u) => u.id !== id));
+
+  // ==========================================
+  // FUNGSI MANAJEMEN PERANGKAT (POST KE DATABASE)
+  // ==========================================
+  const handleAddDevice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!deviceForm.mac || !deviceForm.location) return;
+    
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/perangkat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mac_address: deviceForm.mac,
+          lokasi_lahan: deviceForm.location
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        alert("Sukses: " + data.message);
+        setDeviceForm({ mac: "", location: "" });
+        fetchDevices(); // Refresh tabel setelah berhasil simpan
+      } else {
+        alert("Gagal: " + data.error);
+      }
+    } catch (error) {
+      alert("Terjadi kesalahan jaringan saat menyimpan perangkat.");
+    }
+  };
+  
+  // Fungsi Hapus (Sementara hapus dari state UI saja)
+  const deleteDevice = (id: string | number) => setDevices(devices.filter((d) => d.id !== id));
+
+  // ==========================================
+  // FUNGSI MANAJEMEN PENGGUNA (POST KE DATABASE)
+  // ==========================================
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userForm.name || !userForm.email || !userForm.password) return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama_lengkap: userForm.name,
+          email: userForm.email,
+          password: userForm.password,
+          role: userForm.role
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        alert("Sukses: " + data.message);
+        setUserForm({ name: "", email: "", password: "", role: "Petani" });
+        fetchUsers(); // Refresh tabel setelah berhasil simpan
+      } else {
+        alert("Gagal: " + data.error);
+      }
+    } catch (error) {
+      alert("Terjadi kesalahan jaringan saat menyimpan pengguna.");
+    }
+  };
+  
+  // Fungsi Hapus (Sementara hapus dari state UI saja)
+  const deleteUser = (id: string | number) => setUsers(users.filter((u) => u.id !== id));
 
   // Ringkasan Statistik
   const onlineDevices = devices.filter(d => d.status === "Online").length;
   const offlineDevices = devices.length - onlineDevices;
 
-  // TABEL PERANGKAT (Komponen Reusable agar tidak duplikat kode)
+  // TABEL PERANGKAT (Komponen Reusable)
   const TableDaftarPerangkat = ({ showPagination = false }) => (
     <div className="overflow-x-auto w-full flex-1">
       <table className="w-full text-left border-collapse min-w-[800px]">
@@ -87,7 +162,7 @@ export default function AdminPage() {
                    </div>
                    <div>
                      <p className="font-bold text-[#1a365d]">{device.name}</p>
-                     <p className="text-[11px] text-slate-400 font-medium">ID: DEV-00{device.id}</p>
+                     <p className="text-[11px] text-slate-400 font-medium">ID: {device.id}</p>
                    </div>
                 </div>
               </td>
@@ -102,7 +177,7 @@ export default function AdminPage() {
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500 leading-relaxed font-medium">
-                {device.lastActive.split('\n').map((line, i) => <div key={i}>{line}</div>)}
+                {device.lastActive.split('\n').map((line: string, i: number) => <div key={i}>{line}</div>)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-center">
                 <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -146,7 +221,6 @@ export default function AdminPage() {
       {/* TAMPILAN DASHBOARD (DEFAULT /admin) */}
       {activeTab === 'dashboard' && (
         <>
-          {/* 4 Kartu Statistik */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div className="bg-[#f8fafc] rounded-2xl border border-slate-100 p-6 flex items-start gap-4 hover:border-blue-200 transition-colors cursor-pointer" onClick={() => navigate('/admin/perangkat')}>
               <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
@@ -193,7 +267,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Tabel Perangkat Lebar Penuh (Dashboard) */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-6">
             <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
               <div className="flex items-center gap-3">
@@ -206,7 +279,6 @@ export default function AdminPage() {
                  </div>
               </div>
               
-              {/* TOMBOL NAVIGASI KE MANAJEMEN PERANGKAT */}
               <button 
                 onClick={() => navigate('/admin/perangkat')} 
                 className="bg-[#1c64f2] hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2.5 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
@@ -215,8 +287,6 @@ export default function AdminPage() {
                 Tambah Perangkat
               </button>
             </div>
-            
-            {/* Panggil komponen tabel */}
             <TableDaftarPerangkat showPagination={true} />
           </div>
         </>
@@ -225,7 +295,6 @@ export default function AdminPage() {
       {/* TAMPILAN MANAJEMEN PERANGKAT (/admin/perangkat) */}
       {activeTab === 'perangkat' && (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-          {/* Form Registrasi (Kiri) */}
           <div className="xl:col-span-1">
              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit sticky top-6">
                <h2 className="text-lg font-bold text-[#1a365d] mb-1">Registrasi Node Baru</h2>
@@ -244,13 +313,14 @@ export default function AdminPage() {
                    />
                  </div>
                  <div>
-                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Lokasi Lahan</label>
+                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Lokasi Lahan *</label>
                    <input
                      type="text"
                      placeholder="Contoh: Sektor E"
                      value={deviceForm.location}
                      onChange={(e) => setDeviceForm({ ...deviceForm, location: e.target.value })}
                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 font-medium outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50"
+                     required
                    />
                  </div>
                  <button type="submit" className="w-full bg-[#1c64f2] hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-sm transition-colors mt-2 shadow-sm flex items-center justify-center gap-2">
@@ -261,7 +331,6 @@ export default function AdminPage() {
              </div>
           </div>
 
-          {/* Tabel Perangkat (Kanan) */}
           <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
               <div className="flex items-center gap-3">
@@ -274,7 +343,6 @@ export default function AdminPage() {
                  </div>
               </div>
             </div>
-            
             <TableDaftarPerangkat showPagination={false} />
           </div>
         </div>
@@ -309,6 +377,19 @@ export default function AdminPage() {
                      required
                    />
                  </div>
+                 
+                 {/* KOTAK INPUT PASSWORD BARU */}
+                 <div>
+                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Password *</label>
+                   <input
+                     type="password"
+                     value={userForm.password}
+                     onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 font-medium outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50"
+                     required
+                   />
+                 </div>
+
                  <div>
                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">Hak Akses (Role)</label>
                    <select
@@ -316,7 +397,7 @@ export default function AdminPage() {
                      onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 font-medium outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-slate-50"
                    >
-                     <option value="User">Petani (User)</option>
+                     <option value="Petani">Petani (User)</option>
                      <option value="Admin">Administrator</option>
                    </select>
                  </div>
@@ -366,7 +447,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 text-[10px] rounded-md font-bold uppercase tracking-wider ${
-                          u.role === "Admin" ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-600"
+                          u.role.toLowerCase() === "admin" ? "bg-purple-100 text-purple-700" : "bg-slate-100 text-slate-600"
                         }`}>
                           {u.role}
                         </span>
@@ -378,6 +459,9 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ))}
+                  {users.length === 0 && (
+                    <tr><td colSpan={3} className="px-6 py-10 text-center text-slate-500 text-sm">Belum ada pengguna terdaftar.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>

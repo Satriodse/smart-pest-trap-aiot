@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
 
 # 4. Salin requirements dan instal library
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 5. Salin seluruh file backend (termasuk app.py, best.pt, model.pkl)
